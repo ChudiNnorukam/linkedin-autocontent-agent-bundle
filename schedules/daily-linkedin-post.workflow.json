@@ -1,0 +1,19 @@
+
+{
+  "name": "Daily LinkedIn Autopost",
+  "trigger": {
+    "type": "cron",
+    "hour": 9,
+    "minute": 0
+  },
+  "actions": [
+    {
+      "agent": "linkedin-autocontent-agent",
+      "input": {
+        "cursorLog": "{{getCursorLog()}}",
+        "keyword": "LinkedIn Automation",
+        "hookFormat": "Just launched this — {{hook}}"
+      }
+    }
+  ]
+}

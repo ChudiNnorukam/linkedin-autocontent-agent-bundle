@@ -1,0 +1,77 @@
+{
+  "name": "productivity",
+  "title": "Productivity & Automation Insights",
+  "description": "Daily insights on productivity, automation, and workflow optimization",
+  "category": "productivity",
+  "hooks": [
+    "Just automated another 4 hours of work!",
+    "Productivity hack: AI automation is the game-changer",
+    "From manual to automated - the transformation journey",
+    "Building systems that work while you sleep"
+  ],
+  "structure": {
+    "day": "Day {current_day} of building my AI Agent",
+    "metrics": "📊 {specific_metrics}",
+    "technical": "🔧 {technical_details}",
+    "challenge": "🎯 {implementation_challenge}",
+    "solution": "✅ {solution_implemented}",
+    "insight": "💡 {key_learning}",
+    "question": "🤔 {engagement_question}"
+  },
+  "hashtags": [
+    "#Productivity",
+    "#Automation",
+    "#WorkflowOptimization",
+    "#ProcessImprovement",
+    "#Efficiency",
+    "#TimeManagement",
+    "#DigitalTransformation",
+    "#TechLeadership",
+    "#SystemsArchitecture",
+    "#CursorAI"
+  ],
+  "variables": {
+    "metrics": [
+      "📊 4 hours saved daily on repetitive tasks",
+      "📊 90% reduction in manual data entry",
+      "📊 3x faster content creation process",
+      "📊 100% accuracy in scheduled posting",
+      "📊 50% increase in daily output capacity"
+    ],
+    "technical_details": [
+      "🔧 Automated workflow using n8n + Node.js",
+      "🔧 Integrated PM2 for process management",
+      "🔧 Built with LinkedIn API v2 and cron scheduling",
+      "🔧 Deployed on macOS with automated monitoring",
+      "🔧 Using OpenAI for intelligent content generation"
+    ],
+    "challenges": [
+      "🎯 Maintaining quality while increasing speed",
+      "🎯 Balancing automation with human touch",
+      "🎯 Scaling processes without losing personalization",
+      "🎯 Managing multiple platforms simultaneously"
+    ],
+    "solutions": [
+      "✅ Implemented quality control checkpoints",
+      "✅ Added human review layer for critical content",
+      "✅ Built modular system for easy customization",
+      "✅ Created unified dashboard for multi-platform management"
+    ],
+    "insights": [
+      "💡 Automation doesn't replace humans, it amplifies them",
+      "💡 The best systems work invisibly in the background",
+      "💡 Process optimization beats working harder every time",
+      "💡 Small automations compound into massive time savings",
+      "💡 Quality automation requires quality planning"
+    ],
+    "questions": [
+      "🤔 What repetitive task takes up most of your time?",
+      "🤔 How do you measure productivity in your role?",
+      "🤔 What's stopping you from automating more processes?",
+      "🤔 What's your biggest workflow pain point?",
+      "🤔 How much time could you save with better automation?"
+    ]
+  },
+  "created": "2025-08-04T22:36:56.655Z",
+  "lastModified": "2025-08-04T22:36:56.659Z"
+} 

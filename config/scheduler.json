@@ -1,0 +1,11 @@
+{
+  "scheduleTime": "09:00",
+  "timezone": "America/New_York",
+  "enabled": true,
+  "templates": [
+    "ai-development",
+    "productivity",
+    "learning-journey"
+  ],
+  "rotation": "sequential"
+}

@@ -1,0 +1,77 @@
+{
+  "name": "learning-journey",
+  "title": "AI Learning Journey & Growth",
+  "description": "Daily insights from the AI learning journey with technical deep-dives",
+  "category": "learning",
+  "hooks": [
+    "Another breakthrough in my AI learning journey!",
+    "Learning AI automation - the unexpected discoveries",
+    "From beginner to builder: My AI journey continues",
+    "The learning curve is steep but the rewards are massive"
+  ],
+  "structure": {
+    "day": "Day {current_day} of building my AI Agent",
+    "metrics": "📊 {specific_metrics}",
+    "technical": "🔧 {technical_details}",
+    "challenge": "🎯 {implementation_challenge}",
+    "solution": "✅ {solution_implemented}",
+    "insight": "💡 {key_learning}",
+    "question": "🤔 {engagement_question}"
+  },
+  "hashtags": [
+    "#AI",
+    "#Learning",
+    "#TechEducation",
+    "#ContinuousLearning",
+    "#SkillDevelopment",
+    "#AIArchitecture",
+    "#SystemsArchitecture",
+    "#TechLeadership",
+    "#DigitalTransformation",
+    "#CursorAI"
+  ],
+  "variables": {
+    "metrics": [
+      "📊 216 days of consistent AI development",
+      "📊 15+ new technical skills acquired",
+      "📊 3 major automation systems built",
+      "📊 90% improvement in coding efficiency",
+      "📊 5x faster problem-solving capabilities"
+    ],
+    "technical_details": [
+      "🔧 Mastered Node.js, PM2, and API integrations",
+      "🔧 Learned n8n workflow automation platform",
+      "🔧 Built LinkedIn automation with v2 API",
+      "🔧 Implemented cron scheduling and process management",
+      "🔧 Integrated OpenAI for intelligent content generation"
+    ],
+    "challenges": [
+      "🎯 Understanding complex API documentation",
+      "🎯 Debugging asynchronous JavaScript operations",
+      "🎯 Managing authentication and security best practices",
+      "🎯 Scaling from prototype to production systems"
+    ],
+    "solutions": [
+      "✅ Built comprehensive testing and validation systems",
+      "✅ Implemented proper error handling and logging",
+      "✅ Created modular architecture for easy debugging",
+      "✅ Established security protocols for API management"
+    ],
+    "insights": [
+      "💡 The best learning happens through building real systems",
+      "💡 Documentation is as important as the code itself",
+      "💡 Small wins compound into massive breakthroughs",
+      "💡 Consistency beats intensity in skill development",
+      "💡 Every bug is a learning opportunity in disguise"
+    ],
+    "questions": [
+      "🤔 What's the biggest skill you've learned this year?",
+      "🤔 How do you approach learning new technologies?",
+      "🤔 What's your biggest learning challenge right now?",
+      "🤔 How do you measure progress in your learning journey?",
+      "🤔 What's the most valuable lesson you've learned from failure?"
+    ]
+  },
+  "created": "2025-08-04T22:36:56.655Z",
+  "lastModified": "2025-08-04T22:36:56.659Z"
+} 
