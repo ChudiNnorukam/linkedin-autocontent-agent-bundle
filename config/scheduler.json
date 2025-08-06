@@ -1,11 +1,13 @@
 {
   "scheduleTime": "09:00",
-  "timezone": "America/New_York",
+  "timezone": "America/Los_Angeles",
   "enabled": true,
   "templates": [
     "ai-development",
     "productivity",
     "learning-journey"
   ],
-  "rotation": "sequential"
+  "rotation": "sequential",
+  "debug": true,
+  "logLevel": "verbose"
 }

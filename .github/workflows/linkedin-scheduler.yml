@@ -1,0 +1,48 @@
+name: LinkedIn AutoContent Scheduler
+
+on:
+  schedule:
+    # Runs at 9:00 AM PST (17:00 UTC)
+    - cron: '0 17 * * *'
+  workflow_dispatch: # Manual trigger
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  post-content:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Generate and post content
+      env:
+        LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+        LINKEDIN_PERSON_ID: ${{ secrets.LINKEDIN_PERSON_ID }}
+        LINKEDIN_CLIENT_ID: ${{ secrets.LINKEDIN_CLIENT_ID }}
+        LINKEDIN_CLIENT_SECRET: ${{ secrets.LINKEDIN_CLIENT_SECRET }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        echo "🕘 Current time: $(date)"
+        echo "🌍 UTC time: $(date -u)"
+        echo "📅 PST time: $(TZ='America/Los_Angeles' date)"
+        node post-now-simple.cjs
+        
+    - name: Upload logs as artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: posting-logs-${{ github.run_number }}
+        path: logs/
+        retention-days: 30
