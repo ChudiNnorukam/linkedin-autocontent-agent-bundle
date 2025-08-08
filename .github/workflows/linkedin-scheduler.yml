@@ -80,12 +80,22 @@ jobs:
 
     - name: Ensure logs directory
       run: mkdir -p logs
+    
+    - name: Normalize POSTING_ENABLED
+      run: |
+        VAL="${{ secrets.POSTING_ENABLED }}"
+        VAL="$(printf '%s' "$VAL" | tr '[:upper:]' '[:lower:]' | xargs)"
+        if [ "$VAL" = "true" ]; then
+          echo "POSTING_ENABLED=true" >> $GITHUB_ENV
+        else
+          echo "POSTING_ENABLED=false" >> $GITHUB_ENV
+        fi
       
     - name: Generate and post (once)
       env:
         LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
         LINKEDIN_PERSON_ID: ${{ secrets.LINKEDIN_PERSON_ID }}
-        POSTING_ENABLED: ${{ secrets.POSTING_ENABLED }}
+        POSTING_ENABLED: ${{ env.POSTING_ENABLED }}
         NODE_ENV: production
         TIMEZONE: America/Los_Angeles
       run: |
