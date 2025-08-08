@@ -17,22 +17,34 @@ jobs:
       contents: read
       actions: read
       issues: write
+    concurrency:
+      group: linkedin-scheduler-${{ github.ref }}
+      cancel-in-progress: false
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       
-    - name: Setup Node.js
+    - name: Setup Node.js (with cache)
+      if: ${{ env.DISABLE_NODE_CACHE != 'true' }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
         cache-dependency-path: 'package-lock.json'
 
+    - name: Setup Node.js (no cache)
+      if: ${{ env.DISABLE_NODE_CACHE == 'true' }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
     - name: Ensure npm cache directory
+      if: ${{ env.DISABLE_NODE_CACHE != 'true' }}
       run: mkdir -p ~/.npm
 
     - name: Cache npm cache
+      if: ${{ env.DISABLE_NODE_CACHE != 'true' }}
       uses: actions/cache@v4
       with:
         path: ~/.npm
