@@ -68,7 +68,14 @@ jobs:
         echo "🕘 Current time: $(date)"
         echo "🌍 UTC time: $(date -u)"
         echo "📅 Pacific time: $(TZ='America/Los_Angeles' date)"
-        node scheduler/daily-post-scheduler.js --once
+        # Draft at 6am PT and auto-post at 9am PT: choose based on env input
+        if [ "${{ inputs.mode }}" = "draft" ]; then
+          node scheduler/daily-post-scheduler.js --once --draft
+        elif [ "${{ inputs.mode }}" = "post" ]; then
+          node scheduler/daily-post-scheduler.js --once --post-from-draft
+        else
+          node scheduler/daily-post-scheduler.js --once
+        fi
         
     - name: Upload logs as artifacts
       if: always()

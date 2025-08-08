@@ -10,7 +10,7 @@ class DailyPostScheduler {
   constructor() {
     this.isRunning = false;
     this.scheduleTime = '09:00'; // Default: 9 AM daily
-    this.timezone = 'America/New_York';
+    this.timezone = 'America/Los_Angeles';
     this.templatePath = path.join(__dirname, '../templates');
     this.logPath = path.join(__dirname, '../logs/scheduler.log');
   }
@@ -24,8 +24,13 @@ class DailyPostScheduler {
     // Load configuration
     await this.loadConfiguration();
     
-    // Test LinkedIn API connection
-    await this.testLinkedInConnection();
+    // Test LinkedIn API connection only when posting is enabled
+    const shouldPost = String(process.env.POSTING_ENABLED).toLowerCase() === 'true';
+    if (shouldPost) {
+      await this.testLinkedInConnection();
+    } else {
+      console.log('🧪 Dry-run mode detected (POSTING_ENABLED != true). Skipping API connectivity test.');
+    }
     
     console.log('✅ Scheduler initialized successfully');
   }
@@ -234,6 +239,11 @@ ${template.hashtags.join(' ')}`;
 
   async postToLinkedIn(content) {
     try {
+      if (String(process.env.POSTING_ENABLED).toLowerCase() !== 'true') {
+        console.log('🧪 POSTING_ENABLED is not true. Dry-run: not posting to LinkedIn.');
+        await this.logPost(content, 'dry-run');
+        return { ok: true, id: 'dry-run', dryRun: true };
+      }
       const response = await fetch('https://api.linkedin.com/v2/ugcPosts', {
         method: 'POST',
         headers: {
@@ -301,6 +311,10 @@ ${template.hashtags.join(' ')}`;
   async runScheduledPost() {
     try {
       console.log('🕐 Running scheduled post...');
+      if (await this.hasPostedToday()) {
+        console.log('⏭️ Already posted today. Skipping.');
+        return { skipped: true };
+      }
       
       const content = await this.generateDailyContent();
       console.log('📝 Generated content:');
@@ -316,6 +330,21 @@ ${template.hashtags.join(' ')}`;
     } catch (error) {
       console.error('❌ Scheduled post failed:', error.message);
       await this.logError(error);
+    }
+  }
+
+  async hasPostedToday() {
+    try {
+      const logFile = path.join(__dirname, '../logs/posts.json');
+      const raw = await fs.readFile(logFile, 'utf8');
+      const logs = JSON.parse(raw);
+      if (!Array.isArray(logs) || logs.length === 0) return false;
+      const last = logs[logs.length - 1];
+      const lastDate = new Date(last.timestamp).toLocaleDateString('en-US', { timeZone: this.timezone });
+      const today = new Date().toLocaleDateString('en-US', { timeZone: this.timezone });
+      return lastDate === today;
+    } catch {
+      return false;
     }
   }
 
