@@ -1,10 +1,11 @@
-name: LinkedIn AutoContent Scheduler
+name: LinkedIn AutoContent Scheduler (Manual & Scheduled)
 
 on:
   schedule:
-    # Runs at 9:00 AM PST (17:00 UTC)
-    - cron: '0 17 * * *'
-  workflow_dispatch: # Manual trigger
+    # 9am Pacific (handle PST/PDT)
+    - cron: '0 17 * * *'  # 9am PST
+    - cron: '0 16 * * *'  # 9am PDT
+  workflow_dispatch: {}
 
 env:
   NODE_VERSION: '18'
@@ -12,6 +13,10 @@ env:
 jobs:
   post-content:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      issues: write
     
     steps:
     - name: Checkout repository
@@ -22,22 +27,37 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
+        cache-dependency-path: package-lock.json
         
     - name: Install dependencies
-      run: npm ci
+      run: |
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install --no-audit --no-fund
+        fi
+
+    - name: Verify lockfile and workspace
+      run: |
+        pwd
+        ls -la
+        test -f package-lock.json && echo "Found package-lock.json"
+
+    - name: Ensure logs directory
+      run: mkdir -p logs
       
-    - name: Generate and post content
+    - name: Generate and post (once)
       env:
         LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
         LINKEDIN_PERSON_ID: ${{ secrets.LINKEDIN_PERSON_ID }}
-        LINKEDIN_CLIENT_ID: ${{ secrets.LINKEDIN_CLIENT_ID }}
-        LINKEDIN_CLIENT_SECRET: ${{ secrets.LINKEDIN_CLIENT_SECRET }}
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        POSTING_ENABLED: ${{ secrets.POSTING_ENABLED }}
+        NODE_ENV: production
+        TIMEZONE: America/Los_Angeles
       run: |
         echo "🕘 Current time: $(date)"
         echo "🌍 UTC time: $(date -u)"
-        echo "📅 PST time: $(TZ='America/Los_Angeles' date)"
-        node post-now-simple.cjs
+        echo "📅 Pacific time: $(TZ='America/Los_Angeles' date)"
+        node scheduler/daily-post-scheduler.js --once
         
     - name: Upload logs as artifacts
       if: always()
@@ -45,4 +65,28 @@ jobs:
       with:
         name: posting-logs-${{ github.run_number }}
         path: logs/
+        if-no-files-found: ignore
         retention-days: 30
+
+    - name: File issue on failure
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const {owner, repo} = context.repo;
+          const title = `Automated: Scheduler failed (#${context.runId})`;
+          const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+          const body = [
+            `Workflow: ${context.workflow}`,
+            `Job: ${context.job}`,
+            `Run ID: ${context.runId}`,
+            `Actor: ${context.actor}`,
+            `Logs: ${runUrl}`,
+          ].join('\n');
+          const issues = await github.rest.issues.listForRepo({owner, repo, state: 'open', labels: 'bot:autofix'});
+          const existing = issues.data.find(i => i.title.startsWith('Automated: Scheduler failed'));
+          if (existing) {
+            await github.rest.issues.createComment({owner, repo, issue_number: existing.number, body});
+          } else {
+            await github.rest.issues.create({owner, repo, title, body, labels: ['bot:autofix']});
+          }
