@@ -5,7 +5,16 @@ on:
     # 9am Pacific (handle PST/PDT)
     - cron: '0 17 * * *'  # 9am PST
     - cron: '0 16 * * *'  # 9am PDT
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode (auto|draft|post)"
+        required: false
+        default: "auto"
+      DISABLE_NODE_CACHE:
+        description: "Disable node caching (true|false)"
+        required: false
+        default: "false"
 
 env:
   NODE_VERSION: '18'
@@ -20,6 +29,9 @@ jobs:
     concurrency:
       group: linkedin-scheduler-${{ github.ref }}
       cancel-in-progress: false
+    env:
+      MODE: ${{ inputs.mode || 'auto' }}
+      DISABLE_NODE_CACHE: ${{ inputs.DISABLE_NODE_CACHE || 'false' }}
     
     steps:
     - name: Checkout repository
@@ -81,9 +93,9 @@ jobs:
         echo "🌍 UTC time: $(date -u)"
         echo "📅 Pacific time: $(TZ='America/Los_Angeles' date)"
         # Draft at 6am PT and auto-post at 9am PT: choose based on env input
-        if [ "${{ inputs.mode }}" = "draft" ]; then
+        if [ "${{ env.MODE }}" = "draft" ]; then
           node scheduler/daily-post-scheduler.js --once --draft
-        elif [ "${{ inputs.mode }}" = "post" ]; then
+        elif [ "${{ env.MODE }}" = "post" ]; then
           node scheduler/daily-post-scheduler.js --once --post-from-draft
         else
           node scheduler/daily-post-scheduler.js --once
