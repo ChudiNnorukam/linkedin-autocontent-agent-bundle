@@ -28,6 +28,14 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
+
+    - name: Cache node modules (fallback)
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
         
     - name: Install dependencies
       run: |
@@ -67,6 +75,14 @@ jobs:
         path: logs/
         if-no-files-found: ignore
         retention-days: 30
+
+    - name: Ensure at least one log file exists
+      if: always()
+      run: |
+        if [ ! -d logs ] || [ -z "$(ls -A logs 2>/dev/null)" ]; then
+          mkdir -p logs
+          echo "No logs generated in this run." > logs/info.log
+        fi
 
     - name: File issue on failure
       if: failure()
