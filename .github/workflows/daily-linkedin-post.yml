@@ -33,6 +33,12 @@ jobs:
             npm install --no-audit --no-fund
           fi
 
+      - name: Verify lockfile and workspace
+        run: |
+          pwd
+          ls -la
+          test -f package-lock.json && echo "Found package-lock.json"
+
       - name: Prepare environment
         env:
           LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
@@ -42,6 +48,9 @@ jobs:
           TIMEZONE: America/Los_Angeles
         run: |
           node -e "console.log('Env ready')"
+
+      - name: Ensure logs directory
+        run: mkdir -p logs
 
       - name: Generate and post (once)
         env:
@@ -58,6 +67,7 @@ jobs:
         with:
           name: daily-post-logs-${{ github.run_id }}
           path: logs/
+          if-no-files-found: ignore
           retention-days: 14
 
       - name: File issue on failure
