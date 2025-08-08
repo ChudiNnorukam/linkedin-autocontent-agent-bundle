@@ -9,6 +9,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      issues: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,6 +22,7 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: |
@@ -34,5 +39,28 @@ jobs:
       - name: Test
         run: |
           npm run test || node -e "console.log('smoke ok')"
+
+      - name: File issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const title = `Automated: CI failed (#${context.runId})`;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            const body = [
+              `Workflow: ${context.workflow}`,
+              `Job: ${context.job}`,
+              `Run ID: ${context.runId}`,
+              `Actor: ${context.actor}`,
+              `Logs: ${runUrl}`,
+            ].join('\n');
+            const issues = await github.rest.issues.listForRepo({owner, repo, state: 'open', labels: 'bot:autofix'});
+            const existing = issues.data.find(i => i.title.startsWith('Automated: CI failed'));
+            if (existing) {
+              await github.rest.issues.createComment({owner, repo, issue_number: existing.number, body});
+            } else {
+              await github.rest.issues.create({owner, repo, title, body, labels: ['bot:autofix']});
+            }
 
 
