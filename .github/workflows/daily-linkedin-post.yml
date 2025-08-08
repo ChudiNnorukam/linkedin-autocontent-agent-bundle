@@ -1,0 +1,98 @@
+name: Daily LinkedIn Post (9am PST)
+
+on:
+  schedule:
+    # 9am Pacific Standard Time; GitHub uses UTC, handle PST/PDT via two rules
+    - cron: '0 17 * * *'   # 9am PST = 17:00 UTC when standard time
+    - cron: '0 16 * * *'   # 9am PDT = 16:00 UTC when daylight time
+  workflow_dispatch: {}
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Verify lockfile and workspace
+        run: |
+          pwd
+          ls -la
+          test -f package-lock.json && echo "Found package-lock.json"
+
+      - name: Prepare environment
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_PERSON_ID: ${{ secrets.LINKEDIN_PERSON_ID }}
+          POSTING_ENABLED: ${{ secrets.POSTING_ENABLED || 'false' }}
+          NODE_ENV: production
+          TIMEZONE: America/Los_Angeles
+        run: |
+          node -e "console.log('Env ready')"
+
+      - name: Ensure logs directory
+        run: mkdir -p logs
+
+      - name: Generate and post (once)
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_PERSON_ID: ${{ secrets.LINKEDIN_PERSON_ID }}
+          POSTING_ENABLED: ${{ secrets.POSTING_ENABLED || 'false' }}
+          NODE_ENV: production
+          TIMEZONE: America/Los_Angeles
+        run: node scheduler/daily-post-scheduler.js --once
+
+      - name: Upload scheduler logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-post-logs-${{ github.run_id }}
+          path: logs/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: File issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const title = `Automated: Daily LinkedIn Post failed (#${context.runId})`;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            const body = [
+              `Workflow: ${context.workflow}`,
+              `Job: ${context.job}`,
+              `Run ID: ${context.runId}`,
+              `Actor: ${context.actor}`,
+              `Logs: ${runUrl}`,
+              '',
+              'Please review logs and secrets (POSTING_ENABLED, LINKEDIN_*).'
+            ].join('\n');
+            const issues = await github.rest.issues.listForRepo({owner, repo, state: 'open', labels: 'bot:autofix'});
+            const existing = issues.data.find(i => i.title.startsWith('Automated: Daily LinkedIn Post failed'));
+            if (existing) {
+              await github.rest.issues.createComment({owner, repo, issue_number: existing.number, body});
+            } else {
+              await github.rest.issues.create({owner, repo, title, body, labels: ['bot:autofix']});
+            }
+
+

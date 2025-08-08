@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "lastUpdated": "",
+  "objectives": [
+    "Increase LinkedIn post engagement via improved hooks and timing"
+  ],
+  "hypotheses": [
+    {
+      "id": "h1",
+      "statement": "Posting between 08:30-09:30 local time increases CTR",
+      "evidence": [],
+      "status": "open"
+    }
+  ],
+  "experiments": [],
+  "improvements": [],
+  "nextActions": [
+    "Collect baseline CTR for next 7 posts",
+    "Rotate hooks from data/top-hooks.md"
+  ]
+}
+
+

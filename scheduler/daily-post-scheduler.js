@@ -10,7 +10,7 @@ class DailyPostScheduler {
   constructor() {
     this.isRunning = false;
     this.scheduleTime = '09:00'; // Default: 9 AM daily
-    this.timezone = 'America/New_York';
+    this.timezone = 'America/Los_Angeles';
     this.templatePath = path.join(__dirname, '../templates');
     this.logPath = path.join(__dirname, '../logs/scheduler.log');
   }
@@ -24,8 +24,13 @@ class DailyPostScheduler {
     // Load configuration
     await this.loadConfiguration();
     
-    // Test LinkedIn API connection
-    await this.testLinkedInConnection();
+    // Test LinkedIn API connection only when posting is enabled
+    const shouldPost = String(process.env.POSTING_ENABLED).toLowerCase() === 'true';
+    if (shouldPost) {
+      await this.testLinkedInConnection();
+    } else {
+      console.log('🧪 Dry-run mode detected (POSTING_ENABLED != true). Skipping API connectivity test.');
+    }
     
     console.log('✅ Scheduler initialized successfully');
   }
@@ -208,18 +213,28 @@ class DailyPostScheduler {
     // Enhanced content generation with structured elements
     const getRandomElement = (array) => array[Math.floor(Math.random() * array.length)];
     
-    // Get structured content elements
-    const metrics = getRandomElement(template.variables.metrics || ['📊 80% time reduction on content creation']);
-    const technical = getRandomElement(template.variables.technical_details || ['🔧 Built with Node.js, PM2, LinkedIn API v2']);
-    const challenge = getRandomElement(template.variables.challenges || ['🎯 LinkedIn API rate limiting during peak hours']);
-    const solution = getRandomElement(template.variables.solutions || ['✅ Implemented exponential backoff for API retries']);
-    const insight = getRandomElement(template.variables.insights || ['💡 AI agents can handle repetitive tasks 10x faster']);
-    const question = getRandomElement(template.variables.questions || ['🤔 What\'s your biggest automation challenge?']);
+    // Optional brand voice and calendar
+    const brand = await this.loadBrandVoice();
+    const calendar = await this.loadContentCalendar();
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long', timeZone: this.timezone });
+    const calendarEntry = calendar.byDate?.[todayKey] || calendar.byWeekday?.[weekday] || {};
+
+    // Get structured content elements (safe access with sensible defaults)
+    const metrics = getRandomElement(template.variables?.metrics || brand.metrics || ['📊 80% time reduction on content creation']);
+    const technical = getRandomElement(template.variables?.technical_details || brand.technical_details || ['🔧 Built with Node.js, LinkedIn API v2']);
+    const challenge = getRandomElement(template.variables?.challenges || brand.challenges || ['🎯 Managing API rate limiting during peak hours']);
+    const solution = getRandomElement(template.variables?.solutions || brand.solutions || ['✅ Implemented exponential backoff for API retries']);
+    const insight = getRandomElement(template.variables?.insights || brand.insights || ['💡 AI agents handle repetitive tasks 10x faster']);
+    const question = getRandomElement(template.variables?.questions || brand.questions || ['🤔 What\'s your biggest automation challenge?']);
+    const hashtags = (calendarEntry.hashtags || brand.hashtags || template.hashtags || []).join(' ');
+    const signature = brand.signature ? `\n\n${brand.signature}` : '';
+    const topicLine = calendarEntry.topic ? `Topic: ${calendarEntry.topic}\n` : '';
     
     // Build enhanced content structure
     const content = `Day ${dayOfYear} of building my AI Agent:
 
-${metrics}
+${topicLine}${metrics}
 ${technical}
 ${challenge}
 ${solution}
@@ -227,13 +242,18 @@ ${insight}
 
 ${question}
 
-${template.hashtags.join(' ')}`;
+${hashtags}${signature}`;
     
     return content;
   }
 
   async postToLinkedIn(content) {
     try {
+      if (String(process.env.POSTING_ENABLED).toLowerCase() !== 'true') {
+        console.log('🧪 POSTING_ENABLED is not true. Dry-run: not posting to LinkedIn.');
+        await this.logPost(content, 'dry-run');
+        return { ok: true, id: 'dry-run', dryRun: true };
+      }
       const response = await fetch('https://api.linkedin.com/v2/ugcPosts', {
         method: 'POST',
         headers: {
@@ -301,6 +321,10 @@ ${template.hashtags.join(' ')}`;
   async runScheduledPost() {
     try {
       console.log('🕐 Running scheduled post...');
+      if (await this.hasPostedToday()) {
+        console.log('⏭️ Already posted today. Skipping.');
+        return { skipped: true };
+      }
       
       const content = await this.generateDailyContent();
       console.log('📝 Generated content:');
@@ -316,6 +340,50 @@ ${template.hashtags.join(' ')}`;
     } catch (error) {
       console.error('❌ Scheduled post failed:', error.message);
       await this.logError(error);
+    }
+  }
+
+  async hasPostedToday() {
+    try {
+      const logFile = path.join(__dirname, '../logs/posts.json');
+      const raw = await fs.readFile(logFile, 'utf8');
+      const logs = JSON.parse(raw);
+      if (!Array.isArray(logs) || logs.length === 0) return false;
+      const last = logs[logs.length - 1];
+      const lastDate = new Date(last.timestamp).toLocaleDateString('en-US', { timeZone: this.timezone });
+      const today = new Date().toLocaleDateString('en-US', { timeZone: this.timezone });
+      return lastDate === today;
+    } catch {
+      return false;
+    }
+  }
+
+  async loadBrandVoice() {
+    try {
+      const file = path.join(__dirname, '../config/brand.json');
+      const data = await fs.readFile(file, 'utf8');
+      return JSON.parse(data);
+    } catch {
+      return {
+        hashtags: ['#AI', '#CursorAI', '#Automation', '#LinkedInAutomation'],
+        signature: '— Chudi',
+        metrics: [],
+        technical_details: [],
+        challenges: [],
+        solutions: [],
+        insights: [],
+        questions: []
+      };
+    }
+  }
+
+  async loadContentCalendar() {
+    try {
+      const file = path.join(__dirname, '../data/content-calendar.json');
+      const data = await fs.readFile(file, 'utf8');
+      return JSON.parse(data);
+    } catch {
+      return { byDate: {}, byWeekday: {} };
     }
   }
 
@@ -393,8 +461,14 @@ async function main() {
   });
   
   try {
+    const once = process.argv.includes('--once');
     await scheduler.initialize();
-    scheduler.start();
+    if (once) {
+      await scheduler.runScheduledPost();
+      process.exit(0);
+    } else {
+      scheduler.start();
+    }
   } catch (error) {
     console.error('❌ Failed to start scheduler:', error.message);
     process.exit(1);

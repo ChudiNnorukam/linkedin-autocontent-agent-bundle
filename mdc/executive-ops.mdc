@@ -1,0 +1,226 @@
+---
+alwaysApply: true
+---
+
+## Executive Ops MDC: Free‑Tier, Async Research, Git Admin, CI/CD
+
+This MDC empowers the agent with carefully scoped executive capabilities across research, git administration, CI/CD, and shell/CLI tasks, optimized for free‑tier tools only. It encodes operational guardrails, permissible commands, persistence for recursive learning, and automation hooks for production safety.
+
+### Scope & Guardrails
+- Free‑tier only: prefer open‑source, built‑in CLIs, and free GitHub Actions minutes.
+- Minimal code: use existing scripts and structure; add only essential utilities.
+- Monetizable outcomes: prioritize automations that support consistent posting and performance insights.
+- Respect placeholders: never commit secrets; use `.env` and GitHub Secrets.
+- Idempotency: commands must be safe to rerun; support dry‑run before mutate.
+
+### Permissions Matrix (Allowed Operations)
+- Git/GitHub:
+  - `git` (clone, fetch, branch, merge, rebase, commit, tag, push)
+  - `gh` (PRs, issues, releases) using free‑tier GitHub features
+- Shell/CLI:
+  - `bash`, `sh`, `zsh` for orchestration and scripts
+  - `node`, `npm`, `npx` for tasks/tests; `python`, `pip` when needed
+  - `curl`, `wget` for free web fetches; `jq` if available
+- CI/CD:
+  - GitHub Actions workflows (lint/test/build; optional scheduled jobs)
+- Web Research (free‑tier):
+  - DuckDuckGo HTML, Common Crawl, or any provided free search API keys
+  - Caching results locally to minimize network calls
+
+### Async Web Research Policy
+1) Discovery loop (asynchronous capable):
+   - Plan queries → fetch top documents (respect robots) → extract main content → summarize → cite.
+2) Providers:
+   - Default: DuckDuckGo HTML endpoint; optional `SERPAPI_API_KEY`, `GOOGLE_API_KEY`+`GOOGLE_CSE_ID`, or `BING_SEARCH_KEY` if provided.
+3) Storage:
+   - Queries: `data/research/queries/{yyyy-mm-dd}/<slug>.json`
+   - Cache: `data/research/cache.jsonl`
+   - Snapshots: `data/research/pages/{hash}.md`
+4) Output contracts:
+   - Always include `sources[]` with titles and URLs.
+   - Summaries ≤ 300 words unless otherwise requested.
+5) Rate‑limits & etiquette:
+   - Backoff on errors, 1‑2 req/sec max by default, random jitter, respect `Retry‑After`.
+
+### Recursive Learning Memory
+- Persistent file: `data/agent-memory.json`
+- Schema:
+  ```json
+  {
+    "version": 1,
+    "lastUpdated": "ISO-8601",
+    "objectives": ["string"],
+    "hypotheses": [
+      {"id": "h1", "statement": "string", "evidence": ["string"], "status": "open|validated|rejected"}
+    ],
+    "experiments": [
+      {"id": "e1", "goal": "string", "actions": ["string"], "result": "string", "metrics": {}}
+    ],
+    "improvements": ["string"],
+    "nextActions": ["string"]
+  }
+  ```
+- Update rules:
+- Append new observations with timestamps.
+- Promote validated hypotheses; retire rejected ones.
+- Never exceed 1MB; prune oldest entries first.
+
+### Git Administration Rules
+- Branching: `feature/<slug>`, `fix/<slug>`, `chore/<slug>`.
+- Commits: Conventional Commits (e.g., `feat: add executive ops mdc`).
+- PRs: small, focused, with checklist and CI green.
+- Versioning: semantic increments; update `CHANGELOG.md` on release.
+- Tags: `vMAJOR.MINOR.PATCH`.
+- Protect `main`: PR‑only; require CI to pass.
+
+### CI/CD (Free‑tier GitHub Actions)
+- Required workflow: `.github/workflows/ci.yml` running on `push` and `pull_request`:
+  - Setup Node 18, `npm ci`, `npm run lint`, `npm test`.
+- Optional scheduled jobs (enable only with secrets present):
+  - Nightly `health` script; daily scheduler dry‑run.
+
+### Safety & Production Toggles
+- Posting safeguards:
+  - Respect `POSTING_ENABLED` and `NODE_ENV`. If disabled or in non‑prod, only dry‑run.
+- Secrets:
+  - Use `.env` locally and GitHub Secrets in CI. Never log secret values.
+
+### CLI Playbooks (Examples)
+```bash
+# Lint, test, and typecheck (if added)
+npm run lint && npm test
+
+# Create feature branch and open PR
+git checkout -b feature/executive-ops-mdc
+git add mdc/executive-ops.mdc data/agent-memory.json .github/workflows/ci.yml
+git commit -m "feat: executive ops mdc, agent memory, and free-tier CI"
+git push -u origin feature/executive-ops-mdc
+gh pr create --fill
+
+# Run health and analytics locally
+npm run health && npm run analytics
+```
+
+### Required Files & Folders
+- `mdc/executive-ops.mdc` (this file)
+- `data/agent-memory.json` (persistent learning store)
+- `.github/workflows/ci.yml` (free‑tier CI)
+- `data/research/` (created on first research run)
+
+### Enablement Checklist
+- [ ] Set environment variables in `.env` (see `env.example` Research section)
+- [ ] Add GitHub Secrets for CI if posting or API calls are needed
+- [ ] Ensure `POSTING_ENABLED=true` only when ready for production
+- [ ] Verify CI is green on PRs to `main`
+
+## Executive Ops MDC: Free‑Tier, Async Research, Git Admin, CI/CD
+
+This MDC empowers the agent with carefully scoped executive capabilities across research, git administration, CI/CD, and shell/CLI tasks, optimized for free‑tier tools only. It encodes operational guardrails, permissible commands, persistence for recursive learning, and automation hooks for production safety.
+
+### Scope & Guardrails
+- Free‑tier only: prefer open‑source, built‑in CLIs, and free GitHub Actions minutes.
+- Minimal code: use existing scripts and structure; add only essential utilities.
+- Monetizable outcomes: prioritize automations that support consistent posting and performance insights.
+- Respect placeholders: never commit secrets; use `.env` and GitHub Secrets.
+- Idempotency: commands must be safe to rerun; support dry‑run before mutate.
+
+### Permissions Matrix (Allowed Operations)
+- Git/GitHub:
+  - `git` (clone, fetch, branch, merge, rebase, commit, tag, push)
+  - `gh` (PRs, issues, releases) using free‑tier GitHub features
+- Shell/CLI:
+  - `bash`, `sh`, `zsh` for orchestration and scripts
+  - `node`, `npm`, `npx` for tasks/tests; `python`, `pip` when needed
+  - `curl`, `wget` for free web fetches; `jq` if available
+- CI/CD:
+  - GitHub Actions workflows (lint/test/build; optional scheduled jobs)
+- Web Research (free‑tier):
+  - DuckDuckGo HTML, Common Crawl, or any provided free search API keys
+  - Caching results locally to minimize network calls
+
+### Async Web Research Policy
+1) Discovery loop (asynchronous capable):
+   - Plan queries → fetch top documents (respect robots) → extract main content → summarize → cite.
+2) Providers:
+   - Default: DuckDuckGo HTML endpoint; optional `SERPAPI_API_KEY`, `GOOGLE_API_KEY`+`GOOGLE_CSE_ID`, or `BING_SEARCH_KEY` if provided.
+3) Storage:
+   - Queries: `data/research/queries/{yyyy-mm-dd}/<slug>.json`
+   - Cache: `data/research/cache.jsonl`
+   - Snapshots: `data/research/pages/{hash}.md`
+4) Output contracts:
+   - Always include `sources[]` with titles and URLs.
+   - Summaries ≤ 300 words unless otherwise requested.
+5) Rate‑limits & etiquette:
+   - Backoff on errors, 1‑2 req/sec max by default, random jitter, respect `Retry‑After`.
+
+### Recursive Learning Memory
+- Persistent file: `data/agent-memory.json`
+- Schema:
+  ```json
+  {
+    "version": 1,
+    "lastUpdated": "ISO-8601",
+    "objectives": ["string"],
+    "hypotheses": [
+      {"id": "h1", "statement": "string", "evidence": ["string"], "status": "open|validated|rejected"}
+    ],
+    "experiments": [
+      {"id": "e1", "goal": "string", "actions": ["string"], "result": "string", "metrics": {}}
+    ],
+    "improvements": ["string"],
+    "nextActions": ["string"]
+  }
+  ```
+- Update rules:
+- Append new observations with timestamps.
+- Promote validated hypotheses; retire rejected ones.
+- Never exceed 1MB; prune oldest entries first.
+
+### Git Administration Rules
+- Branching: `feature/<slug>`, `fix/<slug>`, `chore/<slug>`.
+- Commits: Conventional Commits (e.g., `feat: add executive ops mdc`).
+- PRs: small, focused, with checklist and CI green.
+- Versioning: semantic increments; update `CHANGELOG.md` on release.
+- Tags: `vMAJOR.MINOR.PATCH`.
+- Protect `main`: PR‑only; require CI to pass.
+
+### CI/CD (Free‑tier GitHub Actions)
+- Required workflow: `.github/workflows/ci.yml` running on `push` and `pull_request`:
+  - Setup Node 18, `npm ci`, `npm run lint`, `npm test`.
+- Optional scheduled jobs (enable only with secrets present):
+  - Nightly `health` script; daily scheduler dry‑run.
+
+### Safety & Production Toggles
+- Posting safeguards:
+  - Respect `POSTING_ENABLED` and `NODE_ENV`. If disabled or in non‑prod, only dry‑run.
+- Secrets:
+  - Use `.env` locally and GitHub Secrets in CI. Never log secret values.
+
+### CLI Playbooks (Examples)
+```bash
+# Lint, test, and typecheck (if added)
+npm run lint && npm test
+
+# Create feature branch and open PR
+git checkout -b feature/executive-ops-mdc
+git add mdc/executive-ops.mdc data/agent-memory.json .github/workflows/ci.yml
+git commit -m "feat: executive ops mdc, agent memory, and free-tier CI"
+git push -u origin feature/executive-ops-mdc
+gh pr create --fill
+
+# Run health and analytics locally
+npm run health && npm run analytics
+```
+
+### Required Files & Folders
+- `mdc/executive-ops.mdc` (this file)
+- `data/agent-memory.json` (persistent learning store)
+- `.github/workflows/ci.yml` (free‑tier CI)
+- `data/research/` (created on first research run)
+
+### Enablement Checklist
+- [ ] Set environment variables in `.env` (see `env.example` Research section)
+- [ ] Add GitHub Secrets for CI if posting or API calls are needed
+- [ ] Ensure `POSTING_ENABLED=true` only when ready for production
+- [ ] Verify CI is green on PRs to `main`
+
