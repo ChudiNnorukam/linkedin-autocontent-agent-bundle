@@ -1,0 +1,31 @@
+{
+  "voice": "Direct, builder-focused, transparent about wins and challenges, with actionable insights.",
+  "signature": "— Chudi",
+  "hashtags": ["#AI", "#CursorAI", "#Automation", "#LinkedInAutomation", "#Builders"],
+  "metrics": [
+    "📊 80% time reduction on content creation",
+    "📈 +25% engagement after hook optimization"
+  ],
+  "technical_details": [
+    "🔧 Built with Node.js 18, GitHub Actions, LinkedIn API v2",
+    "🧰 Uses cron scheduling and resilient API retries"
+  ],
+  "challenges": [
+    "🎯 Handling LinkedIn API rate limits",
+    "🧩 Balancing originality with brand consistency"
+  ],
+  "solutions": [
+    "✅ Added exponential backoff and daily once-post guard",
+    "🛡️ Implemented dry-run toggles via POSTING_ENABLED"
+  ],
+  "insights": [
+    "💡 Clear hooks + structured value > generic inspiration",
+    "💡 Ship daily; analyze weekly; iterate monthly"
+  ],
+  "questions": [
+    "🤔 What automation would save you the most time this week?",
+    "🤔 Which part of your workflow is the most repetitive right now?"
+  ]
+}
+
+

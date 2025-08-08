@@ -1,0 +1,13 @@
+{
+  "byDate": {
+  },
+  "byWeekday": {
+    "Monday": { "topic": "Weekly plan + priority", "hashtags": ["#Focus", "#Planning"] },
+    "Tuesday": { "topic": "AI build update", "hashtags": ["#AI", "#Builders"] },
+    "Wednesday": { "topic": "Process or automation tip", "hashtags": ["#Automation", "#Workflow"] },
+    "Thursday": { "topic": "Learning or teardown", "hashtags": ["#Learning", "#Breakdown"] },
+    "Friday": { "topic": "Metrics and reflection", "hashtags": ["#Metrics", "#Iteration"] }
+  }
+}
+
+
