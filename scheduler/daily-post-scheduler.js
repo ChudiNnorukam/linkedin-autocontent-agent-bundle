@@ -86,18 +86,22 @@ class DailyPostScheduler {
 
   async testLinkedInConnection() {
     try {
+      const token = process.env.LINKEDIN_ACCESS_TOKEN || '';
+      if (!token) {
+        throw new Error('Missing LINKEDIN_ACCESS_TOKEN');
+      }
       const response = await fetch('https://api.linkedin.com/v2/me', {
         headers: {
-          'Authorization': `Bearer ${process.env.LINKEDIN_ACCESS_TOKEN}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-      
       if (response.ok) {
         const profile = await response.json();
         console.log(`✅ LinkedIn API connected: ${profile.localizedFirstName} ${profile.localizedLastName}`);
       } else {
-        throw new Error(`API connection failed: ${response.status}`);
+        const body = await response.text();
+        throw new Error(`API connection failed: ${response.status} ${response.statusText} | ${body.slice(0,200)}`);
       }
     } catch (error) {
       console.error('❌ LinkedIn API connection failed:', error.message);
@@ -278,7 +282,8 @@ ${template.hashtags.join(' ')}`;
         
         return result;
       } else {
-        throw new Error(`Post failed: ${response.status} ${response.statusText}`);
+        const body = await response.text();
+        throw new Error(`Post failed: ${response.status} ${response.statusText} | ${body.slice(0,200)}`);
       }
     } catch (error) {
       console.error('❌ Post failed:', error.message);

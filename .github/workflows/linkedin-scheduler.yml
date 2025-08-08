@@ -99,6 +99,12 @@ jobs:
         NODE_ENV: production
         TIMEZONE: America/Los_Angeles
       run: |
+        if [ -z "$LINKEDIN_ACCESS_TOKEN" ]; then
+          echo "❌ Missing LINKEDIN_ACCESS_TOKEN secret" && exit 1
+        fi
+        if [ -z "$LINKEDIN_PERSON_ID" ]; then
+          echo "❌ Missing LINKEDIN_PERSON_ID secret" && exit 1
+        fi
         echo "🕘 Current time: $(date)"
         echo "🌍 UTC time: $(date -u)"
         echo "📅 Pacific time: $(TZ='America/Los_Angeles' date)"
